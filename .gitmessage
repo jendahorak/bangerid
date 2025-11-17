@@ -1,0 +1,7 @@
+# <type>: <subject>
+#
+# type: feat, fix, docs, style, refactor, test, chore
+# subject: short summary (50 chars or less)
+#
+# Example: feat: add spotify auth flow
+# Example: fix: correct grid layout on mobile
