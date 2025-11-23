@@ -1,6 +1,7 @@
 package spotify
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -125,3 +126,41 @@ func FetchLikedTracks(accessToken string) ([]Track, error) {
 
 	return allTracks, nil
 }
+
+// PlayTrack starts playback of a specific track on a specific device
+func PlayTrack(accessToken, deviceID, trackID string) error {
+	url := fmt.Sprintf("https://api.spotify.com/v1/me/player/play?device_id=%s", deviceID)
+	
+	// Create the body: {"uris": ["spotify:track:TRACK_ID"]}
+	bodyData := map[string][]string{
+		"uris": {fmt.Sprintf("spotify:track:%s", trackID)},
+	}
+	jsonBody, err := json.Marshal(bodyData)
+	if err != nil {
+		return fmt.Errorf("failed to marshal play request: %w", err)
+	}
+
+	// Create request
+	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to perform play request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("spotify play error %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	return nil
+}
+

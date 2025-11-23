@@ -62,7 +62,7 @@ func main() {
 		ClientID:     os.Getenv("CLIENT_ID"),
 		ClientSecret: os.Getenv("CLIENT_SECRET"),
 		RedirectURL:  os.Getenv("REDIRECT_URL"),
-		Scopes:       []string{"user-read-private", "user-read-email", "playlist-read-private", "user-library-read"},
+		Scopes:       []string{"user-read-private", "user-read-email", "playlist-read-private", "user-library-read", "streaming"},
 		Endpoint:     spotify.Endpoint,
 	}
 
@@ -85,6 +85,9 @@ func main() {
 
 	// Grid endpoint - renders the track grid
 	http.HandleFunc("/grid", handlers.RequireAuth(oauthConfig)(gridHandler))
+
+	// Playback endpoint
+	http.HandleFunc("/play", handlers.RequireAuth(oauthConfig)(playHandler))
 
 	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, &http.Cookie{
@@ -119,8 +122,13 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := r.Cookie("spotify_access_token")
+	// Retrieve the token cookie to pass to the frontend
+	cookie, err := r.Cookie("spotify_access_token")
+	var token string
 	loggedIn := err == nil
+	if loggedIn {
+		token = cookie.Value
+	}
 
 	tmpl, err := template.ParseFiles("web/templates/index.html")
 	if err != nil {
@@ -129,7 +137,15 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := tmpl.Execute(w, map[string]bool{"LoggedIn": loggedIn}); err != nil {
+	data := struct {
+		LoggedIn bool
+		Token    string
+	}{
+		LoggedIn: loggedIn,
+		Token:    token,
+	}
+
+	if err := tmpl.Execute(w, data); err != nil {
 		slog.Error("template execute error", slog.Any("error", err))
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
@@ -168,3 +184,33 @@ func gridHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// playHandler triggers playback on the client's device
+func playHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	accessToken := r.Context().Value(handlers.AccessTokenKey).(string)
+	trackID := r.URL.Query().Get("track_id")
+	deviceID := r.PostFormValue("device_id")
+
+	if trackID == "" || deviceID == "" {
+		slog.Warn("missing track_id or device_id", "track_id", trackID, "device_id", deviceID)
+		http.Error(w, "Missing track_id or device_id", http.StatusBadRequest)
+		return
+	}
+
+	slog.Info("starting playback", "track", trackID, "device", deviceID)
+
+	if err := spotifyClient.PlayTrack(accessToken, deviceID, trackID); err != nil {
+		slog.Error("playback failed", slog.Any("error", err))
+		http.Error(w, "Failed to start playback", http.StatusInternalServerError)
+		return
+	}
+
+	// Return 204 No Content so HTMX does nothing (no swap)
+	w.WriteHeader(http.StatusNoContent)
+}
+

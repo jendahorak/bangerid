@@ -7,8 +7,11 @@
     <title>Bangerid - Spotify Liked Songs</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
-
-</head>
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script>
+        window.spotifyToken = "{{ .Token }}";
+    </script>
+    </head>
 
 <body>
     <!-- Floating Controls (Debug/Nav) -->
