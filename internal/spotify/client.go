@@ -108,7 +108,8 @@ func FetchLikedTracks(accessToken string) ([]Track, error) {
 				}
 			} else {
 				// Log missing images to debug console
-				fmt.Printf("Warning: Track '%s' (ID: %s) has no album images\n", track.Name, track.ID)
+				fmt.Printf("Warning: Track '%s' (ID: %s) has no album images - SKIPPING\n", track.Name, track.ID)
+				continue // Skip this track entirely
 			}
 
 			allTracks = append(allTracks, track)

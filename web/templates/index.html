@@ -18,14 +18,15 @@
         <button onclick="location.href='/logout'" class="logout-btn">Logout</button>
         {{ else }}
         <a href="/login" class="login-button">Login with Spotify</a>
-        <div id="loading" class="htmx-indicator">Loading...</div>
         {{ end }}
     </div>
 
-    <!-- Full Screen Grid Container -->
-    <div id="songs-grid" hx-get="/grid" hx-trigger="load" hx-indicator="#loading" class="full-grid">
+    {{ if .LoggedIn }}
+    <div id="songs-grid" hx-get="/grid" hx-trigger="load" class="full-grid">
+        <div class="htmx-indicator">Loading Tracks...</div>
         <!-- Grid will be loaded here via HTMX -->
     </div>
+    {{ end }}
 
     <script src="/static/js/app.js"></script>
 </body>
