@@ -8,12 +8,16 @@ import (
 	"time"
 
 	"github.com/jendahorak/bangerid/internal/handlers"
+	spotifyClient "github.com/jendahorak/bangerid/internal/spotify"
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/spotify"
 )
 
-var oauthConfig *oauth2.Config
+var (
+	oauthConfig *oauth2.Config
+	tracksCache []spotifyClient.Track // Simple global cache for single user
+)
 
 // loggingMiddleware wraps an HTTP handler and logs each request
 func loggingMiddleware(next http.Handler) http.Handler {
@@ -78,6 +82,10 @@ func main() {
 	// OAuth routes
 	http.HandleFunc("/login", handlers.LoginHandler(oauthConfig))
 	http.HandleFunc("/spotify-auth", handlers.CallbackHandler(oauthConfig))
+
+	// Grid endpoint - renders the track grid
+	http.HandleFunc("/grid", handlers.RequireAuth(oauthConfig)(gridHandler))
+
 	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, &http.Cookie{
 			Name:   "spotify_access_token",
@@ -126,5 +134,37 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+}
 
+// gridHandler renders the track grid as HTML
+func gridHandler(w http.ResponseWriter, r *http.Request) {
+	// If cache is empty, fetch tracks
+	if len(tracksCache) == 0 {
+		accessToken := r.Context().Value(handlers.AccessTokenKey).(string)
+
+		slog.Info("cache empty, fetching tracks from Spotify")
+		tracks, err := spotifyClient.FetchLikedTracks(accessToken)
+		if err != nil {
+			slog.Error("failed to fetch tracks", slog.Any("error", err))
+			http.Error(w, "Failed to load tracks", http.StatusInternalServerError)
+			return
+		}
+
+		tracksCache = tracks
+		slog.Info("cached tracks", slog.Int("count", len(tracksCache)))
+	}
+
+	// Render the grid template
+	tmpl, err := template.ParseFiles("web/templates/grid.html")
+	if err != nil {
+		slog.Error("template parse error", slog.Any("error", err))
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	if err := tmpl.Execute(w, tracksCache); err != nil {
+		slog.Error("template execute error", slog.Any("error", err))
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 }

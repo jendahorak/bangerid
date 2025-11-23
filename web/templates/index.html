@@ -6,26 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bangerid - Spotify Liked Songs</title>
     <link rel="stylesheet" href="/static/css/style.css">
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
+
 </head>
 
 <body>
-    <div class="container">
+    <!-- Floating Controls (Debug/Nav) -->
+    <div class="floating-controls">
         <h1>Bangerid</h1>
-
         {{ if .LoggedIn }}
-        <button onclick="location.href='/logout'">Logout</button>
-        <div id="songs-grid" class="songs-grid">
-            <!-- Songs grid here -->
-        </div>
+        <button onclick="location.href='/logout'" class="logout-btn">Logout</button>
         {{ else }}
         <a href="/login" class="login-button">Login with Spotify</a>
+        <div id="loading" class="htmx-indicator">Loading...</div>
         {{ end }}
-
-        <div id="songs-grid" class="songs-grid">
-            <!-- Songs will be loaded here via HTMX -->
-        </div>
     </div>
+
+    <!-- Full Screen Grid Container -->
+    <div id="songs-grid" hx-get="/grid" hx-trigger="load" hx-indicator="#loading" class="full-grid">
+        <!-- Grid will be loaded here via HTMX -->
+    </div>
+
     <script src="/static/js/app.js"></script>
 </body>
 

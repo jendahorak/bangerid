@@ -1,28 +1,119 @@
+:root {
+    --spotify-green: #1DB954;
+    --spotify-black: #191414;
+    --spotify-dark-gray: #282828;
+    --spotify-light-gray: #B3B3B3;
+    --spotify-white: #FFFFFF;
+}
+
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: #121212;
-    color: #fff;
-    padding: 20px;
+    font-family: 'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #000; /* Pure black for the grid background */
+    color: var(--spotify-white);
+    min-height: 100vh;
+    overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
-.container {
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-h1 {
-    margin-bottom: 2rem;
-    color: #1db954;
+/* Full Screen Grid Layout */
+.full-grid {
+    display: grid;
+    /* Auto-fill grid cells, minimum 64px wide, filling available space */
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 0; /* No gaps for that seamless look */
+    width: 100vw;
+    min-height: 100vh;
 }
 
 .songs-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
+    display: contents; /* Allows children to participate in the parent grid */
+}
+
+.song-card {
+    aspect-ratio: 1 / 1; /* Perfectly square */
+    overflow: hidden;
+    position: relative;
+    background-color: var(--spotify-dark-gray);
+}
+
+.album-art {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: opacity 0.2s ease;
+}
+
+.song-card:hover .album-art {
+    opacity: 0.8; /* subtle interaction feedback */
+    cursor: pointer;
+}
+
+/* Floating Controls (Debug Panel) */
+.floating-controls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    border: 1px solid var(--spotify-dark-gray);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 200px;
+}
+
+.floating-controls h1 {
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+    color: var(--spotify-green);
+}
+
+button, .login-button {
+    background-color: var(--spotify-green);
+    color: var(--spotify-white);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 500px; /* Pill shape */
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: transform 0.1s, background-color 0.1s;
+}
+
+button:hover, .login-button:hover {
+    background-color: #1ed760;
+    transform: scale(1.02);
+}
+
+.logout-btn {
+    background-color: transparent;
+    border: 1px solid var(--spotify-white);
+}
+
+.logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: none;
+}
+
+/* HTMX Loading Indicator */
+.htmx-indicator {
+    display: none;
+    font-size: 0.8rem;
+    color: var(--spotify-light-gray);
+    text-align: center;
+}
+
+.htmx-request .htmx-indicator {
+    display: block;
 }

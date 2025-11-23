@@ -1,0 +1,7 @@
+<div class="songs-grid">
+    {{ range . }}
+    <div class="song-item" data-track-id="{{ .ID }}">
+        <img src="{{ .AlbumImage }}" alt="{{ .Name }} by {{ .Artist }}" loading="lazy" class="album-cover">
+    </div>
+    {{ end }}
+</div>
