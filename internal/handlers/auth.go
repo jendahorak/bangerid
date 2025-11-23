@@ -122,6 +122,17 @@ func CallbackHandler(oauthConfig *oauth2.Config) http.HandlerFunc {
 			Expires:  token.Expiry,         // Cookie expires when token expires (~1 hour)
 		})
 
+		// Store the token expiry time so middleware can check if refresh is needed
+		http.SetCookie(w, &http.Cookie{
+			Name:     "spotify_token_expiry",
+			Value:    token.Expiry.Format(time.RFC3339),
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   false,
+			SameSite: http.SameSiteLaxMode,
+			Expires:  token.Expiry,
+		})
+
 		// Store the refresh token in a separate cookie
 		// The refresh token is used to get new access tokens when they expire
 		if token.RefreshToken != "" {
