@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,13 +8,25 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </head>
+
 <body>
     <div class="container">
         <h1>Bangerid</h1>
+
+        {{ if .LoggedIn }}
+        <button onclick="location.href='/logout'">Logout</button>
+        <div id="songs-grid" class="songs-grid">
+            <!-- Songs grid here -->
+        </div>
+        {{ else }}
+        <a href="/login" class="login-button">Login with Spotify</a>
+        {{ end }}
+
         <div id="songs-grid" class="songs-grid">
             <!-- Songs will be loaded here via HTMX -->
         </div>
     </div>
     <script src="/static/js/app.js"></script>
 </body>
+
 </html>
