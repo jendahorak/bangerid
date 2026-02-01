@@ -1,37 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bangerid - Spotify Liked Songs</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
-    <script src="https://sdk.scdn.co/spotify-player.js"></script>
-    <script>
-        window.spotifyToken = "{{ .Token }}";
-    </script>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Bangerid - Spotify Liked Songs</title>
+        <link rel="stylesheet" href="/static/css/style.css" />
+        <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
+        <script src="https://sdk.scdn.co/spotify-player.js"></script>
+        <script>
+            window.spotifyToken = "{{ .Token }}";
+        </script>
     </head>
 
-<body>
-    <!-- Floating Controls (Debug/Nav) -->
-    <div class="floating-controls">
-        <h1>Bangerid</h1>
-        {{ if .LoggedIn }}
-        <button onclick="location.href='/logout'" class="logout-btn">Logout</button>
-        {{ else }}
-        <a href="/login" class="login-button">Login with Spotify</a>
-        {{ end }}
-    </div>
+    <body>
+        <header class="site-header">
+            <div class="header-content">
+                <h1 class="site-title">Bangrid</h1>
+                <nav class="header-nav">
+                    {{ if .LoggedIn }}
+                    <button onclick="location.href = '/logout'" class="nav-btn">
+                        Logout
+                    </button>
+                    {{ else }}
+                    <a href="/login" class="nav-btn">Login with Spotify</a>
+                    {{ end }}
+                </nav>
+            </div>
+        </header>
 
-    {{ if .LoggedIn }}
-    <div id="songs-grid" hx-get="/grid" hx-trigger="load" class="full-grid">
-        <div class="htmx-indicator">Loading Tracks...</div>
-        <!-- Grid will be loaded here via HTMX -->
-    </div>
-    {{ end }}
+        <main class="main-content">
+            {{ if .LoggedIn }}
+            <div
+                id="songs-grid"
+                hx-get="/grid"
+                hx-trigger="load"
+                class="full-grid"
+            >
+                <div class="htmx-indicator">Loading Tracks...</div>
+            </div>
+            {{ end }}
+        </main>
 
-    <script src="/static/js/app.js"></script>
-</body>
-
+        <script src="/static/js/app.js"></script>
+    </body>
 </html>

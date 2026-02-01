@@ -1,11 +1,26 @@
 <div class="songs-grid">
-    {{ range . }}
-    <div class="song-card" 
-         data-track-id="{{ .ID }}"
-         hx-post="/play?track_id={{ .ID }}" 
-         hx-vals='js:{"device_id": window.spotifyDeviceId}'
-         hx-swap="none">
-        <img src="{{ .AlbumImage }}" alt="{{ .Name }}" loading="lazy" class="album-art">
+    {{ range $index, $track := . }}
+    <div
+        class="song-card"
+        data-track-id="{{ $track.ID }}"
+        data-index="{{ $index }}"
+        hx-post="/play?track_id={{ .ID }}"
+        hx-vals='js:{"device_id": window.spotifyDeviceId}'
+        hx-swap="none"
+        hx-trigger="click[target.matches('.album-art, .song-card')]"
+    >
+        <img
+            src="{{ $track.AlbumImage }}"
+            alt="{{ $track.Name }}"
+            loading="lazy"
+            class="album-art"
+        />
+
+        <div class="playback-controls">
+            <button class="control-btn prev-btn" aria-label="Previous"></button>
+            <button class="control-btn pause-btn" aria-label="Pause"></button>
+            <button class="control-btn next-btn" aria-label="Next"></button>
+        </div>
     </div>
     {{ end }}
 </div>

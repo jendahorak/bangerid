@@ -10,10 +10,10 @@ import (
 
 // Track represents a simplified Spotify track for our grid
 type Track struct {
-	ID          string
-	Name        string
-	Artist      string
-	AlbumImage  string
+	ID         string
+	Name       string
+	Artist     string
+	AlbumImage string
 }
 
 // SavedTracksResponse matches Spotify's API response structure
@@ -21,8 +21,8 @@ type SavedTracksResponse struct {
 	Items []struct {
 		AddedAt string `json:"added_at"`
 		Track   struct {
-			ID     string `json:"id"`
-			Name   string `json:"name"`
+			ID      string `json:"id"`
+			Name    string `json:"name"`
 			Artists []struct {
 				Name string `json:"name"`
 			} `json:"artists"`
@@ -35,8 +35,8 @@ type SavedTracksResponse struct {
 			} `json:"album"`
 		} `json:"track"`
 	} `json:"items"`
-	Next   *string `json:"next"`   // URL to next page, null if last page
-	Total  int     `json:"total"`  // Total number of liked tracks
+	Next   *string `json:"next"`  // URL to next page, null if last page
+	Total  int     `json:"total"` // Total number of liked tracks
 	Limit  int     `json:"limit"`
 	Offset int     `json:"offset"`
 }
@@ -130,7 +130,7 @@ func FetchLikedTracks(accessToken string) ([]Track, error) {
 // PlayTrack starts playback of a specific track on a specific device
 func PlayTrack(accessToken, deviceID, trackID string) error {
 	url := fmt.Sprintf("https://api.spotify.com/v1/me/player/play?device_id=%s", deviceID)
-	
+
 	// Create the body: {"uris": ["spotify:track:TRACK_ID"]}
 	bodyData := map[string][]string{
 		"uris": {fmt.Sprintf("spotify:track:%s", trackID)},
@@ -163,4 +163,3 @@ func PlayTrack(accessToken, deviceID, trackID string) error {
 
 	return nil
 }
-
