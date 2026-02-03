@@ -1,1 +1,1 @@
-# bangerid
+# bangrid
