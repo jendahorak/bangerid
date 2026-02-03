@@ -16,14 +16,21 @@ type Track struct {
 	AlbumImage string
 }
 
+type LinkedFrom struct {
+	ID  string `json:"id"`
+	URI string `json:"uri"`
+}
+
 // SavedTracksResponse matches Spotify's API response structure
 type SavedTracksResponse struct {
 	Items []struct {
 		AddedAt string `json:"added_at"`
 		Track   struct {
-			ID      string `json:"id"`
-			Name    string `json:"name"`
-			Artists []struct {
+			ID         string      `json:"id"`
+			URI        string      `json:"uri"`
+			Name       string      `json:"name"`
+			LinkedFrom *LinkedFrom `json:"linked_from"`
+			Artists    []struct {
 				Name string `json:"name"`
 			} `json:"artists"`
 			Album struct {
@@ -44,7 +51,7 @@ type SavedTracksResponse struct {
 // FetchLikedTracks retrieves all of the user's saved/liked tracks from Spotify
 func FetchLikedTracks(accessToken string) ([]Track, error) {
 	var allTracks []Track
-	url := "https://api.spotify.com/v1/me/tracks?limit=50"
+	url := "https://api.spotify.com/v1/me/tracks?limit=50&market=from_token"
 
 	// Create HTTP client
 	client := &http.Client{}
@@ -80,8 +87,14 @@ func FetchLikedTracks(accessToken string) ([]Track, error) {
 
 		// Extract simplified track data
 		for _, item := range response.Items {
+			stableURI := item.Track.URI
+
+			if item.Track.LinkedFrom != nil && item.Track.LinkedFrom.URI != "" {
+				stableURI = item.Track.LinkedFrom.URI
+			}
+
 			track := Track{
-				ID:   item.Track.ID,
+				ID:   stableURI,
 				Name: item.Track.Name,
 			}
 
@@ -128,12 +141,12 @@ func FetchLikedTracks(accessToken string) ([]Track, error) {
 }
 
 // PlayTrack starts playback of a specific track on a specific device
-func PlayTrack(accessToken, deviceID, trackID string) error {
+func PlayTrack(accessToken, deviceID, trackURI string) error {
 	url := fmt.Sprintf("https://api.spotify.com/v1/me/player/play?device_id=%s", deviceID)
 
-	// Create the body: {"uris": ["spotify:track:TRACK_ID"]}
+	// Create the body: {"uris": ["spotify:track:track_uri"]}
 	bodyData := map[string][]string{
-		"uris": {fmt.Sprintf("spotify:track:%s", trackID)},
+		"uris": {trackURI},
 	}
 	jsonBody, err := json.Marshal(bodyData)
 	if err != nil {

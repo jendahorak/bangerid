@@ -181,10 +181,15 @@ body {
     box-sizing: border-box;
 }
 
-/* Show controls only when playing AND hovering */
+/* Show controls only when playing (not loading) AND hovering */
 .song-card.is-playing:hover .playback-controls {
     display: flex;
     opacity: 1;
+}
+
+/* Hide controls during loading state */
+.song-card.is-loading .playback-controls {
+    display: none;
 }
 
 /* Control Buttons - Simple and predictable */
@@ -214,7 +219,7 @@ body {
     color: white;
     font-size: 7px;
     position: absolute;
-    top: 50%;
+    top: 48%;
     left: 50%;
     transform: translate(-50%, -50%);
     line-height: 1;
@@ -226,7 +231,7 @@ body {
     color: white;
     font-size: 7px;
     position: absolute;
-    top: 50%;
+    top: 48%;
     left: 50%;
     transform: translate(-50%, -50%);
     line-height: 1;
@@ -253,11 +258,37 @@ body {
 }
 
 /* Play icon when paused */
-.pause-btn.playing::before {
+.pause-btn.is-paused::before {
     content: "▶";
     font-size: 9px;
     position: absolute;
     top: 50%;
-    left: 50%;
+    left: 52%;
     transform: translate(-50%, -50%);
+}
+
+.song-card.htmx-request {
+    cursor: wait;
+}
+
+.song-card.htmx-request .album-art {
+    filter: grayscale(0.5);
+    opacity: 0.6;
+}
+
+/* Loading state - similar visual to htmx-request */
+.song-card.is-loading {
+    cursor: wait;
+}
+
+.song-card.is-loading .album-art {
+    filter: grayscale(0.5);
+    opacity: 0.6;
+}
+
+/* Disable the controls while loading to prevent double-clicks */
+.song-card.htmx-request .playback-controls,
+.song-card.is-loading .playback-controls {
+    pointer-events: none;
+    opacity: 0.5;
 }

@@ -4,7 +4,7 @@
         class="song-card"
         data-track-id="{{ $track.ID }}"
         data-index="{{ $index }}"
-        hx-post="/play?track_id={{ .ID }}"
+        hx-post="/play?track_uri={{ .ID }}"
         hx-vals='js:{"device_id": window.spotifyDeviceId}'
         hx-swap="none"
         hx-trigger="click[target.matches('.album-art, .song-card')]"

@@ -193,18 +193,18 @@ func playHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	accessToken := r.Context().Value(handlers.AccessTokenKey).(string)
-	trackID := r.URL.Query().Get("track_id")
+	trackURI := r.URL.Query().Get("track_uri")
 	deviceID := r.PostFormValue("device_id")
 
-	if trackID == "" || deviceID == "" {
-		slog.Warn("missing track_id or device_id", "track_id", trackID, "device_id", deviceID)
-		http.Error(w, "Missing track_id or device_id", http.StatusBadRequest)
+	if trackURI == "" || deviceID == "" {
+		slog.Warn("missing track_uri or device_id", "track_uri", trackURI, "device_id", deviceID)
+		http.Error(w, "Missing track_uri or device_id", http.StatusBadRequest)
 		return
 	}
 
-	slog.Info("starting playback", "track", trackID, "device", deviceID)
+	slog.Info("starting playback", "track", trackURI, "device", deviceID)
 
-	if err := spotifyClient.PlayTrack(accessToken, deviceID, trackID); err != nil {
+	if err := spotifyClient.PlayTrack(accessToken, deviceID, trackURI); err != nil {
 		slog.Error("playback failed", slog.Any("error", err))
 		http.Error(w, "Failed to start playback", http.StatusInternalServerError)
 		return
@@ -213,4 +213,3 @@ func playHandler(w http.ResponseWriter, r *http.Request) {
 	// Return 204 No Content so HTMX does nothing (no swap)
 	w.WriteHeader(http.StatusNoContent)
 }
-

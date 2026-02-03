@@ -35,49 +35,50 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     console.error("Failed to validate Spotify account", message);
   });
 
-  // State Change Listener (What's playing?)
   window.spotifyPlayer.addListener("player_state_changed", (state) => {
-    if (!state) return;
+    if (!state || !state.track_window.current_track) return;
 
     const currentTrack = state.track_window.current_track;
-    if (!currentTrack) return;
 
-    // Remove playing class from all cards
-    document.querySelectorAll(".song-card.is-playing").forEach((el) => {
-      el.classList.remove("is-playing");
-    });
-
-    // Add playing class to current track card
-    // Note: Spotify SDK returns IDs sometimes differently (linked tracks),
-    // so this is a best-effort match.
-    const trackId = currentTrack.id;
-    console.log(" Spotify SDK Track ID:", trackId);
-    console.log(" Track Name:", currentTrack.name);
-    const card = document.querySelector(
-      `.song-card[data-track-id="${trackId}"]`,
-    );
-
-    if (card) {
-      console.log("✅ Found matching card!");
-      card.classList.add("is-playing");
-      // Optional: Scroll to view if needed, but might be annoying
-      // card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-      console.error("❌ No card found with track ID:", trackId);
-      console.log(
-        "Available cards:",
-        Array.from(document.querySelectorAll(".song-card"))
-          .slice(0, 5)
-          .map((c) => c.dataset.trackId),
-      );
+    // 1. Collect all valid URIs for this track
+    const activeURIs = new Set();
+    activeURIs.add(currentTrack.uri);
+    if (currentTrack.linked_from && currentTrack.linked_from.uri) {
+      activeURIs.add(currentTrack.linked_from.uri);
     }
 
-    const pauseBtn = document.querySelector(".song-card.is-playing .pause-btn");
-    if (pauseBtn) {
-      if (state.paused) {
-        pauseBtn.classList.add("playing");
-      } else {
-        pauseBtn.classList.remove("playing");
+    // 2. Find the active card
+    let activeCard = null;
+    document.querySelectorAll(".song-card").forEach((card) => {
+      // Note: use dataset.trackId if the HTML attribute is data-track-id
+      if (activeURIs.has(card.dataset.trackId)) {
+        activeCard = card;
+      }
+    });
+
+    // 3. Reset all OTHER cards (not the active one)
+    document.querySelectorAll(".song-card.is-playing").forEach((el) => {
+      if (el !== activeCard) {
+        el.classList.remove("is-playing");
+        const btn = el.querySelector(".pause-btn");
+        if (btn) btn.classList.remove("is-paused");
+      }
+    });
+
+    // 4. Update the active card
+    if (activeCard) {
+      // Remove loading state once SDK confirms playback
+      activeCard.classList.remove("is-loading");
+      activeCard.classList.add("is-playing");
+
+      // Update pause button based on actual state
+      const pauseBtn = activeCard.querySelector(".pause-btn");
+      if (pauseBtn) {
+        if (state.paused) {
+          pauseBtn.classList.add("is-paused");
+        } else {
+          pauseBtn.classList.remove("is-paused");
+        }
       }
     }
   });
@@ -121,5 +122,14 @@ document.addEventListener("click", (e) => {
       }
       return;
     }
+  }
+});
+
+// Add loading state when HTMX request completes but SDK hasn't confirmed yet
+document.body.addEventListener("htmx:afterRequest", (e) => {
+  const card = e.detail.elt;
+  if (card && card.classList.contains("song-card")) {
+    // Add loading state that will be removed when SDK fires player_state_changed
+    card.classList.add("is-loading");
   }
 });
